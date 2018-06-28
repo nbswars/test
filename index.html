@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+
+        input[type=text] {
+            width: 200px;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+            background-image: url('static/twitterlogo_s.png');
+            background-position: 10px 10px;
+            background-repeat: no-repeat;
+            padding: 12px 20px 12px 40px;
+            -webkit-transition: width 0.4s ease-in-out;
+            transition: width 0.4s ease-in-out;
+
+        }
+
+        input[type=text]:focus {
+            width: 60%;
+        }
+
+        .header {
+            padding: 10px 16px;
+            background: #ffffff;
+            color: #f1f1f1;
+        }
+
+        .content {
+            padding: 16px;
+        }
+
+        .sticky {
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+
+        .sticky + .content {
+            padding-top: 60px;
+        }
+
+        #graph{
+            z-index: -1;
+            left: 0;
+        }
+
+        #myHeader{
+            z-index: 10;
+        }
+        .modebar{
+            display: none !important;
+        }
+
+        html, body {margin: 0; height: 100%; overflow: hidden}
+    </style>
+
+</head>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript">
+
+
+
+    function processInput() {
+
+        var twee = document.getElementById("intweet").value;
+        var query = {"text": twee};
+
+        doWork(query);
+    }
+
+    /**
+     * processing data request
+     * @param pa
+     */
+    function doWork(pa) {
+
+	    $.post("postjson", pa, function(result){
+
+//            var lblValue = document.getElementById("out_vec");
+//            alert(result["מרב מיכאלי"]["x"]);
+//            lblValue.innerText = "The text box contains: " + result["zero"]["x"] + "," + result["zero"]["y"];
+            paintGraph(result)
+	    });
+	// stop link reloading the page
+    event.preventDefault();
+    }
+</script>
+
+<!--<script>-->
+    <!--window.onscroll = function() {myFunction()};-->
+
+
+    <!--var header = document.getElementById("myHeader");-->
+    <!--header.classList.add("sticky");-->
+    <!--var sticky = header.offsetTop;-->
+
+    <!--function myFunction() {-->
+<!--//            header.classList.add("sticky");-->
+        <!--if (window.pageYOffset >= sticky) {-->
+            <!--header.classList.add("sticky");-->
+        <!--} else {-->
+            <!--header.classList.remove("sticky");-->
+        <!--}-->
+    <!--}-->
+<!--</script>-->
+
+<body>
+
+    <div class="header" id="myHeader">
+        <div id="tweet" align="center">
+            <input type="text" name="tweet" placeholder="tweet" onKeyUp="processInput()" autocomplete="off" id="intweet" >
+
+        </div>
+    </div>
+
+<!--<span id="out_vec">The text box contains: </span>-->
+
+    <div class="content">
+        <div  id="graph" align="center" style="width: 100%; height: 100%"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <script>
+        function paintGraph(gotData) {
+
+            var data = [];
+            var imgs = [];
+
+
+            for (var mk in gotData) {
+                if (gotData.hasOwnProperty(mk)) {
+//                    alert(mk);
+//                    console.log(mk);
+//                    co = "blue";
+//                    if (gotData[mk]["co"])
+//                        co = "red";
+                    if (mk == "zero")
+                        continue;
+                    var ent = {
+                        x: [gotData[mk]["x"]],
+                        y: [gotData[mk]["y"]],
+                        text: mk,
+                        textposition: 'bottom',
+                        mode: 'markers+text',
+                        type: 'scatter',
+                        marker: {color: [gotData[mk]["co"]]},
+                        hoverinfo: "none"
+
+                    };
+
+                    var img = {
+                        source: gotData[mk]["src"],
+                        xref: "x",
+                        yref: "y",
+                        x: gotData[mk]["x"],
+                        y: gotData[mk]["y"],
+                        sizex: 0.1,
+                        sizey: 0.1,
+                        xanchor: "middle",
+                        yanchor: "middle"
+                    };
+                    data.push(ent);
+                    imgs.push(img);
+                }
+            }
+            var lim = 0.2;
+            var layout = {
+//                xaxis: {range: [-0.5, 0.5]},
+//                yaxis: {range: [-0.5, 0.5]},
+                showlegend: false,
+                xaxis: {
+                    range: [-lim, lim],
+//                    autorange: true,
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    autotick: true,
+                    ticks: '',
+                    showticklabels: false
+                },
+                yaxis: {
+                    range: [-lim, lim],
+//                    autorange: true,
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    autotick: true,
+                    ticks: '',
+                    showticklabels: false
+                },
+//                images: imgs,
+                width: window.innerWidth,
+                height: window.innerHeight,
+                staticPlot: true
+            };
+            console.log(imgs);
+            Plotly.newPlot('graph', data, layout);
+        }
+    </script>
+    </div>
+
+</body>
+</html>
